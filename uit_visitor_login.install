@@ -24,7 +24,7 @@ function uit_visitor_login_schema() {
       ),
     ),
     'indexes' => array(
-      'login_history_uid' => array('uid'),
+      'uit_visitor_login_uid' => array('uid'),
     ),
   );
   return $schema;
