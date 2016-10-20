@@ -1,0 +1,31 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the University IT Visitor Login module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+
+function uit_visitor_login_schema() {
+  $schema['uit_visitor_login'] = array(
+    'fields' => array(
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'uid of user.',
+      ),
+      'login' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => "Timestamp for user's login.",
+      ),
+    ),
+    'indexes' => array(
+      'login_history_uid' => array('uid'),
+    ),
+  );
+  return $schema;
+}

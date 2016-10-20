@@ -1,0 +1,25 @@
+<?php
+/**
+ * @file
+ * Record logins in a separate table.
+ */
+
+/**
+ * Implements hook_user_login().
+ */
+
+function uit_visitor_login_user_login(&$edit, $account) {
+
+  $midnight = strtotime('today midnight');
+
+  $num_rows = db_select('uit_visitor_login')->fields(NULL, array('field'))->condition('uid', $account->uid, '=')->condition('login', $midnight, '>=')->countQuery()->execute()->fetchField();
+
+  if ($num_rows < 1) {
+    db_insert('uit_visitor_login')
+        ->fields(array(
+        'uid' => $account->uid,
+        'login' => $account->login,
+        ))
+        ->execute();
+  }
+}
