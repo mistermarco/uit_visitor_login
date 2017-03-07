@@ -1,0 +1,5 @@
+name = University IT Visitor Login Report
+description = Report for visitor logins
+version = 7.x-1.0
+core = 7.x
+package = "Stanford"

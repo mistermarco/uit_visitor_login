@@ -1,0 +1,118 @@
+<?php
+/**
+ * @file
+ * Record logins in a separate table.
+ */
+
+function uit_visitor_login_report_permission() {
+  return array(
+    'access login report' => array('title' => t('Access Visitor Reports'))
+  );
+}
+
+function uit_visitor_login_report_menu() {
+  $items['reports/visitors'] = array(
+    'page callback' => 'uit_visitor_login_report_view',
+    'access arguments' => array('access login report'),
+  );
+  return $items;
+}
+
+function uit_visitor_login_report_view() {
+  $midnight = strtotime('today midnight');
+
+  $text = '';
+
+  $text .= '<h1>' . t("Visitor Report") . '</h1>';
+
+  $total_users = uit_visitor_login_report_total_users();
+  $text .= '<p>' . t("There are a total of @t users.", array('@t' => $total_users)) . '</p>';
+
+  $today_logins = uit_visitor_login_report_today_logins();
+  $text .= '<p>' . t("Today's logins: @t.", array('@t' => $today_logins)) . '</p>';
+
+  $yesterday_logins = uit_visitor_login_report_yesterday_logins();
+  $text .= '<p>' . t("Yesterday's logins: @t.", array('@t' => $yesterday_logins)) . '</p>';
+
+  for ($i = 30; $i > -1; $i--) {
+    $start = strtotime("midnight -$i day");
+    $j = $i - 1;
+    $end   = strtotime("midnight -$j day"); 
+    $text .= strftime('%b %d %Y', $start) . ': ';
+    $text .= uit_visitor_login_report_day_logins($start, $end) . '<br />'; 
+  }
+
+  // Get the unique count of people who visited in the last 7 days not including today
+  $start = strtotime("midnight today -7 day");
+  $end   = strtotime("midnight today");
+  $seven_day_logins = uit_visitor_login_report_unique_logins($start, $end);
+  $text .= 'Number of visitors who visited at least once in the past 7 days, starting on ' . strftime('%b %d %Y', $start) . ': ';
+  $text .= $seven_day_logins . '<br />';
+
+  // Get the unique count of people who visited in the last 30 days not including today
+  $start = strtotime("midnight today -30 day");
+  $end   = strtotime("midnight today");
+  $thirty_day_logins = uit_visitor_login_report_unique_logins($start, $end);
+  $text .= 'Number of visitors who visited at least once in the past 30 days, starting on ' . strftime('%b %d %Y', $start) . ': ';
+  $text .= $thirty_day_logins . '<br />';
+
+  $text .= uit_visitor_login_report_top_table(7, 0, 20);
+  $text .= uit_visitor_login_report_top_table(14, 0, 20);
+  $text .= uit_visitor_login_report_top_table(30, 0, 20);
+
+  return $text;
+}
+
+function uit_visitor_login_report_top_table($days, $min_visits = 5, $limit = 10) {
+  $text = '<h2>' . t("Top @limit visitors in the past @days days", array('@limit' => $limit, '@days' => $days)) . '</h2>';
+
+  $header = array('Name', 'Logins');
+  $rows   = array();
+
+  $start = strtotime("midnight today -$days day");
+  $end   = strtotime("midnight today");
+
+  $result = uit_visitor_login_report_visits_by_uid($start, $end, $min_visits, $limit);
+
+  foreach($result as $record) {
+    $account = user_load($record->uid);
+    $rows[] = array($account->name, $record->login_count);
+  }
+
+  return $text . theme('table', array('header' => $header, 'rows' => $rows));
+}
+
+function uit_visitor_login_report_visits_by_uid($start, $end, $min_visits = 5, $limit = 10) {
+  $query = db_select('uit_visitor_login')->fields(NULL, array('uid'))->condition('login', $start, '>=')->condition('login', $end, '<')->groupBy('uid');
+  $query->addExpression('COUNT(login)', 'login_count');
+  $query->havingCondition('login_count', $min_visits, '>');
+  $query->orderBy('login_count', 'DESC');
+  $query->range(0, $limit);
+  $result = $query->execute();
+  return $result;
+}
+
+function uit_visitor_login_report_total_users() {
+  $num_users = db_select('users')->countQuery()->execute()->fetchField();
+  return $num_users;
+}
+
+function uit_visitor_login_report_unique_logins($start, $end) {
+  $num_rows = db_select('uit_visitor_login')->fields(NULL, array('uid'))->condition('login', $start, '>=')->condition('login', $end, '<')->distinct()->countQuery()->execute()->fetchField();
+  return $num_rows;
+}
+
+function uit_visitor_login_report_day_logins($start, $end) {
+  $num_rows = db_select('uit_visitor_login')->fields(NULL, array('field'))->condition('login', $start, '>=')->condition('login', $end, '<')->countQuery()->execute()->fetchField();
+  return $num_rows;
+}
+
+function uit_visitor_login_report_today_logins() {
+  $today_logins = uit_visitor_login_report_day_logins(strtotime('today midnight'), strtotime('tomorrow midnight'));
+  return $today_logins;
+}
+
+function uit_visitor_login_report_yesterday_logins() {
+  $yesterday_logins = uit_visitor_login_report_day_logins(strtotime('yesterday midnight'), strtotime('today midnight'));
+  return $yesterday_logins;
+}
