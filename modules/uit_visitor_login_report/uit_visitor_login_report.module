@@ -10,6 +10,75 @@ function uit_visitor_login_report_permission() {
   );
 }
 
+/**
+ * Implementation of hook_block_info()
+ * This module creates several blocks showing statistics
+ */
+
+function uit_visitor_login_report_block_info() {
+  $blocks['visitors_today'] = array(
+    'info'  => t('UIT Visitors: Today Total'),
+    'cache' => DRUPAL_NO_CACHE, 
+  );
+  $blocks['visitors_7_days'] = array(
+    'info'  => t('UIT Visitors: 7-day Total'),
+    'cache' => DRUPAL_NO_CACHE, 
+  );
+  $blocks['visitors_30_days'] = array(
+    'info'  => t('UIT Visitors: 30-day Total'),
+    'cache' => DRUPAL_NO_CACHE, 
+  );
+  $blocks['total_accounts'] = array(
+    'info'  => t('Total Accounts'),
+    'cache' => DRUPAL_NO_CACHE, 
+  );
+  return $blocks;
+}
+
+function uit_visitor_login_report_block_view($delta = '') {
+
+  // set up an empty array which will contain the block contents
+  $block = array();
+
+  switch ($delta) {
+    case 'visitors_today':
+      $block_content = '';
+      global $user;
+      $block['subject'] = t('Today&rsquo;s Visitors');
+      $block['content'] = '<span class="metric metric-number">' . uit_visitor_login_report_today_logins() . '</span>';
+      $block['content'] .= '<p class="metric-notes">The number of unique visitors who logged in today.</p>';
+      break; 
+    case 'visitors_7_days':
+      $block_content = '';
+      global $user;
+      $block['subject'] = t('Visitors: 7 days');
+      $start = strtotime("midnight today -7 day");
+      $end   = strtotime("midnight today");
+      $seven_day_logins = uit_visitor_login_report_unique_logins($start, $end);
+      $block['content'] = '<span class="metric metric-number">' . $seven_day_logins . '</span>';
+      $block['content'] .= '<p class="metric-notes">The number of unique visitors who logged in during the last 7 days.</p>';
+      break; 
+    case 'visitors_30_days':
+      $block_content = '';
+      global $user;
+      $block['subject'] = t('Visitors: 30 days');
+      $start = strtotime("midnight today -30 day");
+      $end   = strtotime("midnight today");
+      $thirty_day_logins = uit_visitor_login_report_unique_logins($start, $end);
+      $block['content'] = '<span class="metric metric-number">' . $thirty_day_logins . '</span>';
+      $block['content'] .= '<p class="metric-notes">The number of unique visitors who logged in during the last 30 days.</p>';
+      break; 
+    case 'total_accounts':
+      $block_content = '';
+      global $user;
+      $block['subject'] = t('Total Accounts');
+      $block['content'] = '<span class="metric metric-number">' . uit_visitor_login_report_total_users() . '</span>';
+      $block['content'] .= '<p class="metric-notes">The number of accounts on the website.</p>';
+      break;
+  }
+  return $block;
+}
+
 function uit_visitor_login_report_menu() {
   $items['reports/visitors'] = array(
     'page callback' => 'uit_visitor_login_report_view',
