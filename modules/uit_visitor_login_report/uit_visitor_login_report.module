@@ -16,6 +16,10 @@ function uit_visitor_login_report_permission() {
  */
 
 function uit_visitor_login_report_block_info() {
+  $blocks['visitors_report'] = array(
+    'info'  => t('UIT Visitors Totals'),
+    'cache' => DRUPAL_NO_CACHE, 
+  );
   $blocks['visitors_today'] = array(
     'info'  => t('UIT Visitors: Today Total'),
     'cache' => DRUPAL_NO_CACHE, 
@@ -41,6 +45,23 @@ function uit_visitor_login_report_block_view($delta = '') {
   $block = array();
 
   switch ($delta) {
+    case 'visitors_report':
+      $block_content = '';
+      $rows = array();
+      global $user;
+      $block['subject'] = t('Visitors');
+      $start = strtotime("midnight today -7 day");
+      $end   = strtotime("midnight today");
+      $seven_day_logins = uit_visitor_login_report_unique_logins($start, $end);
+      $start = strtotime("midnight today -30 day");
+      $end   = strtotime("midnight today");
+      $thirty_day_logins = uit_visitor_login_report_unique_logins($start, $end);
+      $rows[] = array('Today', uit_visitor_login_report_today_logins());
+      $rows[] = array('7 days', $seven_day_logins);
+      $rows[] = array('30 days', $thirty_day_logins);
+      $block['content'] = theme('table', array('header' => array(), 'rows' => $rows));
+      $block['content'] .= '<p class="metric-notes">The number of unique visitors who logged in today, in the past 7 days and in the past 30 days.</p>';
+      break;
     case 'visitors_today':
       $block_content = '';
       global $user;
@@ -72,7 +93,7 @@ function uit_visitor_login_report_block_view($delta = '') {
       $block_content = '';
       global $user;
       $block['subject'] = t('Total Accounts');
-      $block['content'] = '<span class="metric metric-number">' . uit_visitor_login_report_total_users() . '</span>';
+      $block['content'] = '<div class="metric metric-number">' . uit_visitor_login_report_total_users() . '</div>';
       $block['content'] .= '<p class="metric-notes">The number of accounts on the website.</p>';
       break;
   }
