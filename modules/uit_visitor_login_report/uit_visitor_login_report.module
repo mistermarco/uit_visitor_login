@@ -60,7 +60,9 @@ function uit_visitor_login_report_block_view($delta = '') {
       $rows[] = array('7 days', $seven_day_logins);
       $rows[] = array('30 days', $thirty_day_logins);
       $block['content'] = theme('table', array('header' => array(), 'rows' => $rows));
-      $block['content'] .= '<p class="metric-notes">The number of unique visitors who logged in today, in the past 7 days and in the past 30 days.</p>';
+      $block['content'] .= '<p class="metric-notes"><a href="#visitor_report_info" data-toggle="collapse"><i class="fa fa-info-circle" title="Define visitor rpeport"></i></a>
+      
+      <div id="visitor_report_info" class="collapse">The number of unique visitors who logged in today, in the past 7 days and in the past 30 days.</div></p>';
       break;
     case 'visitors_today':
       $block_content = '';
@@ -94,7 +96,9 @@ function uit_visitor_login_report_block_view($delta = '') {
       global $user;
       $block['subject'] = t('Total Accounts');
       $block['content'] = '<div class="metric metric-number">' . uit_visitor_login_report_total_users() . '</div>';
-      $block['content'] .= '<p class="metric-notes">The number of accounts on the website.</p>';
+      $block['content'] .= '<p class="metric-notes"><a href="#total_accounts_info" data-toggle="collapse"><i class="fa fa-info-circle" title="Define total accounts"></i></a>
+      
+      <div id="total_accounts_info" class="collapse">The number of accounts on the website, may include people who are no longer in UIT.</div></p>';
       break;
   }
   return $block;
