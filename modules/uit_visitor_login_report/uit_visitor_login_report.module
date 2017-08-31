@@ -150,9 +150,10 @@ function uit_visitor_login_report_view() {
   $text .= 'Number of visitors who visited at least once in the past 30 days, starting on ' . strftime('%b %d %Y', $start) . ': ';
   $text .= $thirty_day_logins . '<br />';
 
-  $text .= uit_visitor_login_report_top_table(7, 0, 20);
-  $text .= uit_visitor_login_report_top_table(14, 0, 20);
-  $text .= uit_visitor_login_report_top_table(30, 0, 20);
+  $text .= uit_visitor_login_report_top_table(7, 0, 40);
+  $text .= uit_visitor_login_report_top_table(14, 0, 40);
+  $text .= uit_visitor_login_report_top_table(30, 0, 40);
+  $text .= uit_visitor_login_report_top_table(180, 0, 40);
 
   return $text;
 }
